@@ -2,13 +2,12 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
+
 use App\Repository\TipoMonitorRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TipoMonitorRepository::class)]
 #[ORM\Table(name: "tipo_monitor",schema: "safagym")]
-#[ApiResource]
 class TipoMonitor
 {
     #[ORM\Id]
