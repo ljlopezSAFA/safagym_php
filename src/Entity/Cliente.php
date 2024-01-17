@@ -27,6 +27,9 @@ class Cliente
     #[ORM\Column(type: Types::DATETIME_MUTABLE, name: "fecha_nacimiento")]
     private ?\DateTimeInterface $fechaNacimiento = null;
 
+    #[ORM\OneToOne(mappedBy: 'cliente', cascade: ['persist', 'remove'])]
+    private ?Abono $abono = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -76,6 +79,28 @@ class Cliente
     public function setFechaNacimiento(\DateTimeInterface $fechaNacimiento): static
     {
         $this->fechaNacimiento = $fechaNacimiento;
+
+        return $this;
+    }
+
+    public function getAbono(): ?Abono
+    {
+        return $this->abono;
+    }
+
+    public function setAbono(?Abono $abono): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($abono === null && $this->abono !== null) {
+            $this->abono->setCliente(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($abono !== null && $abono->getCliente() !== $this) {
+            $abono->setCliente($this);
+        }
+
+        $this->abono = $abono;
 
         return $this;
     }
