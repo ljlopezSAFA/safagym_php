@@ -68,7 +68,7 @@ class MonitorController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_monitores_update', methods: ['PUT'])]
-    public function update(EntityManagerInterface $entityManager, Request $request, Monitor $monitor): JsonResponse
+    public function update(EntityManagerInterface $entityManager, Request $request, Monitor $monitor,TurnoRepository $turnoRepository, TipoMonitorRepository $tipoMonitorRepository): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
@@ -76,6 +76,27 @@ class MonitorController extends AbstractController
         $monitor->setApellidos($data['apellidos']);
         $monitor->setDni($data['dni']);
         $monitor->setFechaNacimiento($data['fechaNacimiento']); //La fecha viene en formato 'd/m/Y'
+
+
+        //Establecemos un turno o el turno por defecto
+        if(isset($data['id_turno'])){
+            $turno = $turnoRepository->find($data['id_turno']);
+            $monitor->setTurno($turno);
+        }
+
+
+        //Establecemos sus tipos
+        if (isset($data['tipos']) && is_array($data['tipos'])) {
+             $tipos = [];
+            foreach ($data['tipos'] as $tipoId) {
+                $tipoMonitor = $tipoMonitorRepository->find($tipoId);
+                if ($tipoMonitor instanceof TipoMonitor) {
+                    $tipos[] = ($tipoMonitor);
+                }
+            }
+            $monitor->vaciarTipos();
+            $monitor->setTipos($tipos);
+        }
 
         $entityManager->flush();
 

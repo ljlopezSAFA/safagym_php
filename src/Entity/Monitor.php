@@ -136,4 +136,19 @@ class Monitor
         return $this;
     }
 
+    public function vaciarTipos(): static
+    {
+        $this->tipo->clear();
+        return $this;
+    }
+
+    public function setTipos($tipos): static
+    {
+        forEach ($tipos as $t){
+            $this-> addTipo($t);
+         }
+
+        return $this;
+    }
+
 }
