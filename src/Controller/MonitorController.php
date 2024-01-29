@@ -25,6 +25,18 @@ class MonitorController extends AbstractController
         return $this->json($monitores);
     }
 
+
+    #[Route('/tipos', name: 'api_monitores_list_by_tipo', methods: ['GET'])]
+    public function listByTipo(MonitorRepository $monitorRepository, Request $request): JsonResponse
+    {
+
+        $tipos = json_decode($request->query->get('tipos'), true);
+
+        $monitores = $monitorRepository->findByTipos($tipos);
+
+        return $this->json($monitores);
+    }
+
     #[Route('/{id}', name: 'api_monitores_show', methods: ['GET'])]
     public function show(Monitor $monitor): JsonResponse
     {
@@ -47,7 +59,7 @@ class MonitorController extends AbstractController
             $turno = $tipoMonitorRepository->find($data['id_turno']);
             $monitor->setTurno($turno);
         }else{
-            $turnoPorDefecto = $turnoRepository->findBy(["descripcion" => "Mixto"]);
+            $turnoPorDefecto = $turnoRepository->findAll();
             $monitor->setTurno($turnoPorDefecto[0]);
         }
 

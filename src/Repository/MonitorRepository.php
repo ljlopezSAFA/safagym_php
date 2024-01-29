@@ -2,8 +2,12 @@
 
 namespace App\Repository;
 
+use App\Dto\MonitorDTO;
 use App\Entity\Monitor;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\ORM\Query\ResultSetMappingBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -19,22 +23,40 @@ class MonitorRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Monitor::class);
+
     }
 
-//    /**
-//     * @return Monitor[] Returns an array of Monitor objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('m')
-//            ->andWhere('m.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('m.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * @return Monitor[] Returns an array of Monitor objects
+     */
+    public function findByTurno($id_turno): array
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.id_turno = :id_turno')
+            ->setParameter('id_turno', $id_turno)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return Monitor[] Returns an array of Monitor objects
+     */
+    public function findByTipos($tipos)
+    {
+        $sql = 'SELECT m.* FROM safagym.monitor m join safagym.monitor_tipo mt  on mt.id_monitor  = m.id where mt.id_tipo in (:tipos)';
+
+        $rsm = new ResultSetMappingBuilder($this->getEntityManager());
+        $rsm->addRootEntityFromClassMetadata(Monitor::class, 'm');
+        $query = $this->getEntityManager()->createNativeQuery($sql,$rsm);
+        $query->setParameter("tipos", $tipos, ArrayParameterType::INTEGER);
+
+        $result = $query->getResult();
+
+        return $result;
+    }
+
+
 
 //    public function findOneBySomeField($value): ?Monitor
 //    {
