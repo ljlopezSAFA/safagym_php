@@ -5,12 +5,16 @@ namespace App\Controller;
 use App\Entity\Clase;
 use App\Entity\Monitor;
 use App\Repository\ClaseRepository;
+use App\Repository\ClienteRepository;
+use App\Repository\UsuarioRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/clase')]
 class ClaseController extends AbstractController
@@ -28,6 +32,22 @@ class ClaseController extends AbstractController
     public function getById(Clase $clase):JsonResponse
     {
         return $this->json($clase);
+
+    }
+
+
+    #[Route('/fecha', name: "clase_by_id", methods: ["GET"])]
+    #[IsGranted('ROLE_CLIENTE')]
+    public function getByDay(ClaseRepository $claseRepository, Request $request):JsonResponse
+    {
+        $fecha = $request->query->get('fecha');
+        $clases = $claseRepository->findByFecha($fecha);
+
+        foreach ($clases as $c) {
+            $c->setAsistentes($c->getClientes()->count());
+        }
+
+        return $this->json($clases);
 
     }
 
@@ -84,6 +104,68 @@ class ClaseController extends AbstractController
 
         return $this->json(['message' => 'Clase eliminada'], Response::HTTP_OK);
 
+    }
+
+    /**
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     */
+    #[Route('/join/{id}', name: "inscribirse_a_clase", methods: ["POST"])]
+    public function joinClase(EntityManagerInterface $entityManager, Clase $clase,
+                              Request $request, JWTTokenManagerInterface  $jwtManager,
+                              UsuarioRepository $usuarioRepository, ClienteRepository $clienteRepository):JsonResponse
+    {
+
+        // Obtener el token JWT de la cabecera
+        $token = $request->headers->get('authorization');
+        $formatToken = str_replace('Bearer ', '', $token);
+
+        // Extraer datos del token
+        $finaltoken = $jwtManager->parse($formatToken);
+
+
+         $usuario = $usuarioRepository->findOneBy(["username" =>$finaltoken["username"]]);
+         $cliente = $clienteRepository->findOneBy(["usuario" => $usuario]);
+
+         $clase->addCliente($cliente);
+
+
+        $entityManager->persist($clase);
+        $entityManager->flush($clase);
+
+
+        return $this->json(['message' => 'Incripcioón a clase completada'], Response::HTTP_OK);
+
+    }
+
+    /**
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     */
+    #[Route('/abandon/{id}', name: "borrarse_de_clase", methods: ["POST"])]
+    #[IsGranted('ROLE_CLIENTE')]
+    public function abandonClase(EntityManagerInterface $entityManager, Clase $clase,
+                              Request $request, JWTTokenManagerInterface  $jwtManager,
+                              UsuarioRepository $usuarioRepository, ClienteRepository $clienteRepository):JsonResponse
+    {
+
+        // Obtener el token JWT de la cabecera
+        $token = $request->headers->get('authorization');
+        $formatToken = str_replace('Bearer ', '', $token);
+
+        // Extraer datos del token
+        $finaltoken = $jwtManager->parse($formatToken);
+
+
+        $usuario = $usuarioRepository->findOneBy(["username" =>$finaltoken["username"]]);
+        $cliente = $clienteRepository->findOneBy(["usuario" => $usuario]);
+
+        $clase->removeCliente($cliente);
+
+
+        $entityManager->persist($clase);
+        $entityManager->flush($clase);
+
+
+        return $this->json(['message' => 'Cancelación a clase completada'], Response::HTTP_OK);
     }
 
 

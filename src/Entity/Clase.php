@@ -39,6 +39,9 @@ class Clase
     #[ORM\InverseJoinColumn(name: "id_cliente", referencedColumnName: "id")]
     private Collection $clientes;
 
+
+    private ?int $asistentes = null;
+
     public function __construct()
     {
         $this->clientes = new ArrayCollection();
@@ -132,4 +135,22 @@ class Clase
 
         return $this;
     }
+
+    /**
+     * @return int|null
+     */
+    public function getAsistentes(): ?int
+    {
+        return $this->asistentes;
+    }
+
+    /**
+     * @param int|null $asistentes
+     */
+    public function setAsistentes(?int $asistentes): void
+    {
+        $this->asistentes = $asistentes;
+    }
+
+
 }

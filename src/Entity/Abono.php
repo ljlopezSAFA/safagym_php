@@ -21,11 +21,11 @@ class Abono
     #[ORM\Column(name: "fecha_caducidad",type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $fechaCaducidad = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[ORM\JoinColumn(name: "id_tipo_abono" , nullable: false)]
     private ?TipoAbono $tipoAbono = null;
 
-    #[ORM\OneToOne(inversedBy: 'abono', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(name: "id_cliente", nullable: false)]
     private ?Cliente $cliente = null;
 
@@ -81,4 +81,7 @@ class Abono
 
         return $this;
     }
+
+
+
 }

@@ -29,6 +29,9 @@ class Monitor
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $fechaNacimiento = null;
 
+    #[ORM\Column]
+    private ?string $foto = null;
+
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false, name: "id_turno")]
@@ -150,5 +153,23 @@ class Monitor
 
         return $this;
     }
+
+    /**
+     * @return string|null
+     */
+    public function getFoto(): ?string
+    {
+        return $this->foto;
+    }
+
+    /**
+     * @param string|null $foto
+     */
+    public function setFoto(?string $foto): void
+    {
+        $this->foto = $foto;
+    }
+
+
 
 }
