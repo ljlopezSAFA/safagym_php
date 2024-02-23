@@ -43,6 +43,10 @@ class Monitor
     #[ORM\InverseJoinColumn(name: "id_tipo", referencedColumnName: "id")]
     private Collection $tipo;
 
+    #[ORM\OneToOne(targetEntity: Usuario::class, cascade:["persist", "remove"])]
+    #[ORM\JoinColumn(name: 'id_usuario')]
+    private ?Usuario $usuario = null;
+
     public function __construct()
     {
         $this->tipo = new ArrayCollection();
@@ -170,6 +174,21 @@ class Monitor
         $this->foto = $foto;
     }
 
+    /**
+     * @return Usuario|null
+     */
+    public function getUsuario(): ?Usuario
+    {
+        return $this->usuario;
+    }
+
+    /**
+     * @param Usuario|null $usuario
+     */
+    public function setUsuario(?Usuario $usuario): void
+    {
+        $this->usuario = $usuario;
+    }
 
 
 }

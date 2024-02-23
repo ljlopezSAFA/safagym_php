@@ -2,12 +2,18 @@
 
 namespace App\Controller;
 
+use App\Entity\Clase;
+use App\Entity\Mensaje;
 use App\Entity\Monitor;
 use App\Entity\TipoMonitor;
+use App\Repository\ClienteRepository;
 use App\Repository\MonitorRepository;
 use App\Repository\TipoMonitorRepository;
 use App\Repository\TurnoRepository;
+use App\Repository\UsuarioRepository;
+use App\Utils\UtilidadesToken;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,7 +45,7 @@ class MonitorController extends AbstractController
         return $this->json($monitores);
     }
 
-    #[Route('/{id}', name: 'api_monitores_show', methods: ['GET'])]
+    #[Route('/get/{id}', name: 'api_monitores_show', methods: ['GET'])]
     public function show(Monitor $monitor): JsonResponse
     {
         return $this->json($monitor);
@@ -125,4 +131,57 @@ class MonitorController extends AbstractController
 
         return $this->json(['message' => 'Monitor eliminado']);
     }
+
+
+    /**
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     */
+    #[Route('/personal', name: "solicitar_entrenador_personal", methods: ["GET"])]
+    public function solicitarEntrenadorPersonal(EntityManagerInterface $entityManager,
+                                 Request $request, JWTTokenManagerInterface  $jwtManager,
+                                 UsuarioRepository $usuarioRepository,
+                                 UtilidadesToken $utilidadesToken, MonitorRepository $monitorRepository,
+                                                ClienteRepository $clienteRepository):JsonResponse
+    {
+
+        // Extraer datos del token
+        $finaltoken = $utilidadesToken->extraerTokenData($request,$jwtManager)  ;
+        $usuario = $usuarioRepository->findOneBy(["username" =>$finaltoken["username"]]);
+
+
+        $monitores= $monitorRepository->findAll();
+        $monitorAsignado = $monitores[random_int(0, count($monitores) -1)];
+        $cliente = $clienteRepository->findOneBy(["usuario" => $usuario]);
+
+
+        $cliente->getMonitores()[]=$monitorAsignado;
+        $entityManager->flush($cliente);
+
+
+        return $this->json($monitorAsignado);
+    }
+
+
+    /**
+     * @throws \Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException
+     */
+    #[Route('/personal/get', name: "gei_entrenador_personal", methods: ["GET"])]
+    public function getEntrenadorPersonal(Request $request, JWTTokenManagerInterface  $jwtManager,
+                                                UsuarioRepository $usuarioRepository,
+                                                UtilidadesToken $utilidadesToken,
+                                                ClienteRepository $clienteRepository):JsonResponse
+    {
+
+        // Extraer datos del token
+        $finaltoken = $utilidadesToken->extraerTokenData($request,$jwtManager)  ;
+        $usuario = $usuarioRepository->findOneBy(["username" =>$finaltoken["username"]]);
+        $cliente = $clienteRepository->findOneBy(["usuario" => $usuario]);
+        $personal = null;
+        if(count($cliente->getMonitores())>0){
+            $personal = $cliente->getMonitores()[0];
+        }
+        return $this->json($personal);
+    }
+
+
 }

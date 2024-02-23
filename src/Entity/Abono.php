@@ -18,6 +18,9 @@ class Abono
     #[ORM\Column(length: 150)]
     private ?string $codigo = null;
 
+    #[ORM\Column(name: "fecha_inicio",type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $fechaInicio = null;
+
     #[ORM\Column(name: "fecha_caducidad",type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $fechaCaducidad = null;
 
@@ -81,6 +84,24 @@ class Abono
 
         return $this;
     }
+
+    /**
+     * @return \DateTimeInterface|null
+     */
+    public function getFechaInicio(): ?\DateTimeInterface
+    {
+        return $this->fechaInicio;
+    }
+
+    /**
+     * @param \DateTimeInterface|null $fechaInicio
+     */
+    public function setFechaInicio(?\DateTimeInterface $fechaInicio): void
+    {
+        $this->fechaInicio = $fechaInicio;
+    }
+
+
 
 
 
