@@ -2,8 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Clase;
-use App\Entity\Mensaje;
+use App\Dto\MonitoresPorTipoDTO;
 use App\Entity\Monitor;
 use App\Entity\TipoMonitor;
 use App\Repository\ClienteRepository;
@@ -19,13 +18,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/monitor')]
 class MonitorController extends AbstractController
 {
     #[Route('', name: 'api_monitores_list', methods: ['GET'])]
-    #[IsGranted('ROLE_MONITOR')]
+//    #[IsGranted('ROLE_MONITOR')]
     public function list(MonitorRepository $monitorRepository): JsonResponse
     {
         $monitores = $monitorRepository->findAll();
@@ -181,6 +179,28 @@ class MonitorController extends AbstractController
             $personal = $cliente->getMonitores()[0];
         }
         return $this->json($personal);
+    }
+
+
+    #[Route('/getPorTurno', name: 'api_monitores_por_turno', methods: ['GET'])]
+    public function porTurno(MonitorRepository $monitorRepository, TurnoRepository $turnoRepository): JsonResponse
+    {
+
+        $listaTurnos = $turnoRepository->findAll();
+
+        $listMonitoresTipo = [];
+
+        foreach($listaTurnos as $turno){
+
+            $monitorTipo = new MonitoresPorTipoDTO();
+            $monitorTipo->setEtiqueta($turno->getDescripcion());
+            $monitores = $monitorRepository->findBy(["turno"=> $turno]);
+            $monitorTipo->agregarMonitores($monitores);
+            $listMonitoresTipo[] = $monitorTipo;
+        }
+
+
+        return $this->json($listMonitoresTipo);
     }
 
 

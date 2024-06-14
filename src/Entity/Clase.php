@@ -71,7 +71,7 @@ class Clase
 
     public function setFecha(String $fecha): static
     {
-        $this->fecha = \DateTime::createFromFormat('d/m/Y H:i:s', $fecha);
+        $this->fecha = \DateTime::createFromFormat('Y-m-d\TH:i:s', $fecha);
 
         return $this;
     }
