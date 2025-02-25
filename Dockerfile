@@ -23,14 +23,14 @@ WORKDIR /var/www/symfony
 # Crear un usuario no root para ejecutar Composer
 RUN useradd -m symfonyuser
 
-# Establecer permisos adecuados para los archivos del proyecto
+# Copiar los archivos del proyecto
+COPY . .
+
+# Establecer los permisos correctos para los archivos
 RUN chown -R symfonyuser:symfonyuser /var/www/symfony
 
 # Cambiar a usuario no-root
 USER symfonyuser
-
-# Copiar los archivos del proyecto
-COPY . .
 
 # Instalar dependencias de Symfony sin ejecutar los scripts
 RUN composer install --no-scripts --no-autoloader
