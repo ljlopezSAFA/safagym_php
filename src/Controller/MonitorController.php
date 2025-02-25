@@ -23,7 +23,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class MonitorController extends AbstractController
 {
     #[Route('', name: 'api_monitores_list', methods: ['GET'])]
-//    #[IsGranted('ROLE_MONITOR')]
     public function list(MonitorRepository $monitorRepository): JsonResponse
     {
         $monitores = $monitorRepository->findAll();

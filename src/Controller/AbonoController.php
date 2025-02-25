@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use function Webmozart\Assert\Tests\StaticAnalysis\null;
 
 #[Route('/api/abono')]
 class AbonoController extends AbstractController
@@ -40,7 +39,7 @@ class AbonoController extends AbstractController
             $listaAbonoDTOs[] = $abonoDTO;
         }
 
-        return $this->json($listaAbonos,Response::HTTP_OK );
+        return $this->json($listaAbonoDTOs,Response::HTTP_OK );
 
     }
 
