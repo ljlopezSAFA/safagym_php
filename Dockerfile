@@ -20,10 +20,19 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Crear directorio de trabajo
 WORKDIR /var/www/symfony
 
+# Crear un usuario no root para ejecutar Composer
+RUN useradd -m symfonyuser
+
+# Establecer permisos adecuados para los archivos del proyecto
+RUN chown -R symfonyuser:symfonyuser /var/www/symfony
+
+# Cambiar a usuario no-root
+USER symfonyuser
+
 # Copiar los archivos del proyecto
 COPY . .
 
-# Instalar dependencias de Symfony
+# Instalar dependencias de Symfony sin ejecutar los scripts
 RUN composer install --no-scripts --no-autoloader
 
 # Crear el directorio var/ manualmente si no existe
