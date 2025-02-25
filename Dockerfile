@@ -14,38 +14,27 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     && docker-php-ext-install intl pdo pdo_pgsql pgsql zip opcache
 
-# Instalar Composer globalmente
-COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Activar mod_rewrite para Symfony
-RUN a2enmod rewrite
+# Crear directorio de trabajo
+WORKDIR /var/www/symfony
 
-# Configurar Apache para usar el directorio /public como DocumentRoot
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+# Copiar los archivos
+COPY . .
 
-# Copiar el código del proyecto al contenedor
-COPY . /var/www/html/
+# Instalar dependencias de Symfony
+RUN composer install --no-scripts --no-autoloader
 
-# Establecer el directorio de trabajo
-WORKDIR /var/www/html
+# Permitir cambios en caliente
+RUN chmod -R 777 var/
 
-# Configurar permisos
-RUN mkdir -p /var/www/html/var /var/www/html/vendor /var/www/html/public \
-    && chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/var /var/www/html/vendor /var/www/html/public
+# Configurar Symfony para desarrollo
+ENV APP_ENV=dev
 
-# Instalar dependencias de PHP con Composer (sin scripts automáticos)
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+# Configurar Volumes para cambios en caliente
+VOLUME ["/var/www/symfony"]
 
-# Limpiar caché de Symfony en producción
-RUN php bin/console cache:clear --env=prod \
-    && chmod -R 777 /var/www/html/var
+CMD ["php-fpm"]
 
-# Eliminar las variables redundantes, Symfony usará las del archivo .env
-# No sobrescribir APP_ENV ni DATABASE_URL
-
-# Exponer el puerto 80
-EXPOSE 80
-
-# Configurar el punto de entrada
-CMD ["apache2-foreground"]
+CMD composer install && php -S 0.0.0.0:8000 -t public
