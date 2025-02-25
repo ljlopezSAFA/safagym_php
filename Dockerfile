@@ -26,6 +26,11 @@ COPY . /var/www/html/
 # Establecer el directorio de trabajo
 WORKDIR /var/www/html
 
+# Crear las carpetas necesarias si no existen y cambiar permisos
+RUN mkdir -p /var/www/html/var /var/www/html/vendor /var/www/html/public \
+    && chown -R www-data:www-data /var/www/html/var /var/www/html/vendor /var/www/html/public \
+    && chmod -R 775 /var/www/html/var /var/www/html/vendor /var/www/html/public
+
 # Cambiar permisos para Symfony
 RUN chown -R www-data:www-data /var/www/html/var /var/www/html/vendor /var/www/html/public \
     && chmod -R 775 /var/www/html/var /var/www/html/vendor /var/www/html/public
